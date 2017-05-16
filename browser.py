@@ -16,15 +16,15 @@ class BrowserTab(Gtk.VBox):
 
         self._setup_find_dialog()
 
-        url_box = Gtk.HBox()
-        url_box.pack_start(self.url_bar, True, True, 0)
-        url_box.pack_start(self.tasks_button, False, False, 0)
+        self.url_box = Gtk.HBox()
+        self.url_box.pack_start(self.url_bar, True, True, 0)
+        self.url_box.pack_start(self.tasks_button, False, False, 0)
 
-        self.pack_start(url_box, False, False, 0)
+        self.pack_start(self.url_box, False, False, 0)
         self.pack_start(scrolled_window, True, True, 0)
         self.pack_start(self.find_box, False, False, 0)
 
-        url_box.show_all()
+        self.url_box.show_all()
         scrolled_window.show()
 
     def _load_url(self, widget):
@@ -32,6 +32,9 @@ class BrowserTab(Gtk.VBox):
         if not "://" in url:
             url = "http://" + url
         self.webview.load_uri(url)
+
+        self.showing_url_box = False
+        self.url_box.hide()
 
     def _setup_find_dialog(self):
         find_box = Gtk.HBox()
@@ -54,6 +57,14 @@ class BrowserTab(Gtk.VBox):
         find_box.pack_start(prev_button, expand=False, fill=False, padding=0)
         find_box.pack_start(next_button, expand=False, fill=False, padding=0)
         self.find_box = find_box
+
+    def _toggle_url_box(self):
+        if self.showing_url_box:
+            self.url_box.hide()
+            self.showing_url_box = False
+        else:
+            self.url_box.show_all()
+            self.showing_url_box = True
 
 class Browser(Gtk.Window):
     def __init__(self, *args, **kwargs):
@@ -122,8 +133,11 @@ class Browser(Gtk.Window):
         tab.webview.connect("title-changed", self._title_changed)
         return tab
 
+    def _current_tab(self):
+        return self.tabs[self.notebook.get_current_page()][0]
+
     def _current_tab_webview(self):
-        return self.tabs[self.notebook.get_current_page()][0].webview
+        return _current_tab.webview
 
     def _close_current_tab(self):
         if self.notebook.get_n_pages() == 1:
@@ -175,7 +189,7 @@ class Browser(Gtk.Window):
             Gdk.KEY_l:     self._toggle_task_list,
 
             # Global shortcuts
-            Gdk.KEY_u:     self._focus_url_bar,
+            Gdk.KEY_u:     lambda: self._current_tab()._toggle_url_box(),
             Gdk.KEY_q:     Gtk.main_quit
         }
 

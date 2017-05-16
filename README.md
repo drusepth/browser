@@ -12,7 +12,7 @@ A browser for Doing Stuff.
 The default mod-key is `ctrl`.
 
 * `mod`+`t` - Open a new tab
-* `mod`+`u` - Highlight the URL bar
+* `mod`+`u` - Toggle show/hiding the URL bar
 * `mod`+`w` - Close the current tab
 * `mod`+`r` - Refresh the current page
 * `mod`+`left` - Navigate backwards a page
