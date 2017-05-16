@@ -83,16 +83,20 @@ class Browser(Gtk.Window):
         self.connect("key-press-event", self._key_pressed)
         self.notebook.connect("switch-page", self._tab_changed)
 
-        self.split_browser_container.show_all()
+        self.split_browser_container.show()
+        self.notebook.show()
         self.show()
 
     def _setup_task_dialog(self):
         self.tasks_box = Gtk.VBox()
         self.tasks_box.set_size_request(360, 32)
+        self.showing_task_pane = False
 
+        task_entry = Gtk.Entry()
         add_task_button = Gtk.Button("+ Task")
+
+        self.tasks_box.pack_start(task_entry, False, False, 0)
         self.tasks_box.pack_start(add_task_button, False, False, 0)
-        add_task_button.show()
 
     def _tab_changed(self, notebook, current_page, index):
         if not index:
@@ -145,7 +149,12 @@ class Browser(Gtk.Window):
         self.tabs[current_page][0].find_entry.grab_focus()
 
     def _toggle_task_list(self):
-        pass
+        if self.showing_task_pane == True:
+            self.tasks_box.hide()
+            self.showing_task_pane = False
+        else:
+            self.tasks_box.show_all()
+            self.showing_task_pane = True
 
     def _key_pressed(self, widget, event):
         modifiers = Gtk.accelerator_get_default_mod_mask()
@@ -163,7 +172,7 @@ class Browser(Gtk.Window):
             Gdk.KEY_f:     self._raise_find_dialog,
 
             # Taskbar cnotrol
-            #Gdk.KEY_l:     self._toggle_task_list,
+            Gdk.KEY_l:     self._toggle_task_list,
 
             # Global shortcuts
             Gdk.KEY_u:     self._focus_url_bar,
