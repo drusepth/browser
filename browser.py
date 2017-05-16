@@ -10,12 +10,6 @@ class BrowserTab(Gtk.VBox):
         self.webview = WebKit.WebView()
         self.show()
 
-        # TODO: replace these with keyboard shortcuts
-        self.go_back = Gtk.Button("<")
-        self.go_back.connect("clicked", lambda x: self.webview.go_back())
-        self.go_forward = Gtk.Button(">")
-        self.go_forward.connect("clicked", lambda x: self.webview.go_forward())
-
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.add(self.webview)
 
@@ -41,8 +35,6 @@ class BrowserTab(Gtk.VBox):
         self.find_box = find_box
 
         url_box = Gtk.HBox()
-        url_box.pack_start(self.go_back, False, False, 0)
-        url_box.pack_start(self.go_forward, False, False, 0)
         url_box.pack_start(self.url_bar, True, True, 0)
 
         self.pack_start(url_box, False, False, 0)
@@ -107,8 +99,8 @@ class Browser(Gtk.Window):
         tab.webview.connect("title-changed", self._title_changed)
         return tab
 
-    def _reload_tab(self):
-        self.tabs[self.notebook.get_current_page()][0].webview.reload()
+    def _current_tab_webview(self):
+        return self.tabs[self.notebook.get_current_page()][0].webview
 
     def _close_current_tab(self):
         if self.notebook.get_n_pages() == 1:
@@ -120,7 +112,7 @@ class Browser(Gtk.Window):
     def _open_new_tab(self):
         current_page = self.notebook.get_current_page()
         page_tuple = (self._create_tab(), Gtk.Label("New Tab"))
-        self.tabs.insert(current_page+1, page_tuple)
+        self.tabs.insert(current_page + 1, page_tuple)
         self.notebook.insert_page(page_tuple[0], page_tuple[1], current_page+1)
         self.notebook.set_current_page(current_page+1)
 
@@ -133,27 +125,31 @@ class Browser(Gtk.Window):
         self.tabs[current_page][0].find_box.show_all()
         self.tabs[current_page][0].find_entry.grab_focus()
 
-
     def _key_pressed(self, widget, event):
         modifiers = Gtk.accelerator_get_default_mod_mask()
         mapping = {
-            Gdk.KEY_r: self._reload_tab,
-            Gdk.KEY_w: self._close_current_tab,
-            Gdk.KEY_t: self._open_new_tab,
-            Gdk.KEY_l: self._focus_url_bar,
-            Gdk.KEY_Left: self._open_new_tab,
-            Gdk.KEY_f: self._raise_find_dialog,
-            Gdk.KEY_q: Gtk.main_quit
+            # Handling tabs
+            Gdk.KEY_t:     self._open_new_tab,
+            Gdk.KEY_w:     self._close_current_tab,
+
+            # Current tab actions
+            Gdk.KEY_r:     lambda: self._current_tab_webview().reload(),
+            Gdk.KEY_Left:  lambda: self._current_tab_webview().go_back(),
+            Gdk.KEY_Right: lambda: self._current_tab_webview().go_forward(),
+
+            # In-page actions
+            Gdk.KEY_f:     self._raise_find_dialog,
+
+            # Global shortcuts
+            Gdk.KEY_l:     self._focus_url_bar,
+            Gdk.KEY_q:     Gtk.main_quit
         }
 
         if event.state & modifiers == Gdk.ModifierType.CONTROL_MASK \
           and event.keyval in mapping:
             mapping[event.keyval]()
 
-
 if __name__ == "__main__":
     Gtk.init(sys.argv)
-
     browser = Browser()
-
     Gtk.main()
