@@ -84,7 +84,7 @@ class Browser(Gtk.Window):
         self.notebook.connect("switch-page", self._tab_changed)
 
         self.split_browser_container.show()
-        self.notebook.show()
+        self.notebook.show_all()
         self.show()
 
     def _setup_task_dialog(self):

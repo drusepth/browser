@@ -18,6 +18,7 @@ The default mod-key is `ctrl`.
 * `mod`+`left` - Navigate backwards a page
 * `mod`+`right` - Navigate forwards a page
 * `mod`+`f` - Find words on the current page
+* `mod`+`l` - Toggle showing to-do list
 * `mod`+`q` - Quit
 
 # Expected keyboard shortcuts
@@ -25,7 +26,6 @@ The default mod-key is `ctrl`.
 These shortcuts don't exist yet, but are listed for planning purposes.
 
 * `mod`+# - Switch to tab # (number keys)
-* `mod`+`l` - Show to-do list
 * `alt`+# - Switch context to todo item # (number keys)
 * `mod`+`a` - Associate current tab with current todo item
 * `mod`+`d` - Remove current tab's association with current todo item
