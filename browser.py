@@ -7,12 +7,38 @@ class BrowserTab(Gtk.VBox):
 
         self.url_bar = Gtk.Entry()
         self.url_bar.connect("activate", self._load_url)
+        self.tasks_button = Gtk.Button("Tasks")
         self.webview = WebKit.WebView()
         self.show()
 
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.add(self.webview)
 
+        self._setup_find_dialog()
+        self._setup_task_dialog()
+
+        url_box = Gtk.HBox()
+        url_box.pack_start(self.url_bar, True, True, 0)
+        url_box.pack_start(self.tasks_button, False, False, 0)
+
+        self.split_browser_container = Gtk.HBox()
+        self.split_browser_container.pack_start(scrolled_window, True, True, 0)
+        self.split_browser_container.pack_start(self.tasks_box, False, False, 0)
+
+        self.pack_start(url_box, False, False, 0)
+        self.pack_start(self.split_browser_container, True, True, 0)
+        self.pack_start(self.find_box, False, False, 0)
+
+        url_box.show_all()
+        self.split_browser_container.show_all()
+
+    def _load_url(self, widget):
+        url = self.url_bar.get_text()
+        if not "://" in url:
+            url = "http://" + url
+        self.webview.load_uri(url)
+
+    def _setup_find_dialog(self):
         find_box = Gtk.HBox()
         close_button = Gtk.Button("Close")
         close_button.connect("clicked", lambda x: find_box.hide())
@@ -28,27 +54,20 @@ class BrowserTab(Gtk.VBox):
         next_button.connect("clicked",
                             lambda x: self.webview.search_text(self.find_entry.get_text(),
                                                                False, True, True))
-        find_box.pack_start(close_button, False, False, 0)
-        find_box.pack_start(self.find_entry, False, False, 0)
-        find_box.pack_start(prev_button, False, False, 0)
-        find_box.pack_start(next_button, False, False, 0)
+        find_box.pack_start(close_button, expand=False, fill=False, padding=0)
+        find_box.pack_start(self.find_entry, expand=False, fill=False, padding=0)
+        find_box.pack_start(prev_button, expand=False, fill=False, padding=0)
+        find_box.pack_start(next_button, expand=False, fill=False, padding=0)
         self.find_box = find_box
 
-        url_box = Gtk.HBox()
-        url_box.pack_start(self.url_bar, True, True, 0)
+    def _setup_task_dialog(self):
+        self.tasks_box = Gtk.VBox()
+        self.tasks_box.set_size_request(360, 32)
 
-        self.pack_start(url_box, False, False, 0)
-        self.pack_start(scrolled_window, True, True, 0)
-        self.pack_start(find_box, False, False, 0)
+        add_task_button = Gtk.Button("+ Task")
+        self.tasks_box.pack_start(add_task_button, False, False, 0)
+        add_task_button.show()
 
-        url_box.show_all()
-        scrolled_window.show_all()
-
-    def _load_url(self, widget):
-        url = self.url_bar.get_text()
-        if not "://" in url:
-            url = "http://" + url
-        self.webview.load_uri(url)
 
 class Browser(Gtk.Window):
     def __init__(self, *args, **kwargs):
@@ -60,7 +79,7 @@ class Browser(Gtk.Window):
 
         # basic stuff
         self.tabs = []
-        self.set_size_request(400,400)
+        self.set_size_request(400, 400)
 
         # create a first, empty browser tab
         self.tabs.append((self._create_tab(), Gtk.Label("New Tab")))
@@ -125,6 +144,9 @@ class Browser(Gtk.Window):
         self.tabs[current_page][0].find_box.show_all()
         self.tabs[current_page][0].find_entry.grab_focus()
 
+    def _toggle_task_list(self):
+        pass
+
     def _key_pressed(self, widget, event):
         modifiers = Gtk.accelerator_get_default_mod_mask()
         mapping = {
@@ -140,8 +162,11 @@ class Browser(Gtk.Window):
             # In-page actions
             Gdk.KEY_f:     self._raise_find_dialog,
 
+            # Taskbar cnotrol
+            #Gdk.KEY_l:     self._toggle_task_list,
+
             # Global shortcuts
-            Gdk.KEY_l:     self._focus_url_bar,
+            Gdk.KEY_u:     self._focus_url_bar,
             Gdk.KEY_q:     Gtk.main_quit
         }
 
