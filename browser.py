@@ -5,16 +5,15 @@ class BrowserTab(Gtk.VBox):
     def __init__(self, *args, **kwargs):
         super(BrowserTab, self).__init__(*args, **kwargs)
 
-        go_button = Gtk.Button("go to...")
-        go_button.connect("clicked", self._load_url)
         self.url_bar = Gtk.Entry()
         self.url_bar.connect("activate", self._load_url)
         self.webview = WebKit.WebView()
         self.show()
 
-        self.go_back = Gtk.Button("Back")
+        # TODO: replace these with keyboard shortcuts
+        self.go_back = Gtk.Button("<")
         self.go_back.connect("clicked", lambda x: self.webview.go_back())
-        self.go_forward = Gtk.Button("Forward")
+        self.go_forward = Gtk.Button(">")
         self.go_forward.connect("clicked", lambda x: self.webview.go_forward())
 
         scrolled_window = Gtk.ScrolledWindow()
@@ -27,8 +26,8 @@ class BrowserTab(Gtk.VBox):
         self.find_entry.connect("activate",
                                 lambda x: self.webview.search_text(self.find_entry.get_text(),
                                                                    False, True, True))
-        prev_button = Gtk.Button("Previous")
-        next_button = Gtk.Button("Next")
+        prev_button = Gtk.Button("<")
+        next_button = Gtk.Button(">")
         prev_button.connect("clicked",
                             lambda x: self.webview.search_text(self.find_entry.get_text(),
                                                                False, False, True))
@@ -45,7 +44,6 @@ class BrowserTab(Gtk.VBox):
         url_box.pack_start(self.go_back, False, False, 0)
         url_box.pack_start(self.go_forward, False, False, 0)
         url_box.pack_start(self.url_bar, True, True, 0)
-        url_box.pack_start(go_button, False, False, 0)
 
         self.pack_start(url_box, False, False, 0)
         self.pack_start(scrolled_window, True, True, 0)
@@ -64,20 +62,20 @@ class Browser(Gtk.Window):
     def __init__(self, *args, **kwargs):
         super(Browser, self).__init__(*args, **kwargs)
 
-	# create notebook and tabs
-	self.notebook = Gtk.Notebook()
-	self.notebook.set_scrollable(True)
+        # create notebook and tabs
+        self.notebook = Gtk.Notebook()
+        self.notebook.set_scrollable(True)
 
-	# basic stuff
+        # basic stuff
         self.tabs = []
-	self.set_size_request(400,400)
+        self.set_size_request(400,400)
 
         # create a first, empty browser tab
         self.tabs.append((self._create_tab(), Gtk.Label("New Tab")))
         self.notebook.append_page(*self.tabs[0])
         self.add(self.notebook)
 
-	# connect signals
+        # connect signals
         self.connect("destroy", Gtk.main_quit)
         self.connect("key-press-event", self._key_pressed)
         self.notebook.connect("switch-page", self._tab_changed)
@@ -138,12 +136,15 @@ class Browser(Gtk.Window):
 
     def _key_pressed(self, widget, event):
         modifiers = Gtk.accelerator_get_default_mod_mask()
-        mapping = {Gdk.KEY_r: self._reload_tab,
-                   Gdk.KEY_w: self._close_current_tab,
-                   Gdk.KEY_t: self._open_new_tab,
-                   Gdk.KEY_l: self._focus_url_bar,
-                   Gdk.KEY_f: self._raise_find_dialog,
-                   Gdk.KEY_q: Gtk.main_quit}
+        mapping = {
+            Gdk.KEY_r: self._reload_tab,
+            Gdk.KEY_w: self._close_current_tab,
+            Gdk.KEY_t: self._open_new_tab,
+            Gdk.KEY_l: self._focus_url_bar,
+            Gdk.KEY_Left: self._open_new_tab,
+            Gdk.KEY_f: self._raise_find_dialog,
+            Gdk.KEY_q: Gtk.main_quit
+        }
 
         if event.state & modifiers == Gdk.ModifierType.CONTROL_MASK \
           and event.keyval in mapping:
