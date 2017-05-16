@@ -1,0 +1,8 @@
+[Desktop Entry]
+_Name=Drowser
+_Comment=Drowser application
+Categories=GNOME;Utility;
+Exec=drowser
+Icon=drowser
+Terminal=false
+Type=Application
