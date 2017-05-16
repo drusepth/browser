@@ -5,7 +5,7 @@
 
 from locale import gettext as _
 
-from gi.repository import Gtk # pylint: disable=E0611
+from gi.repository import Gtk, WebKit
 import logging
 logger = logging.getLogger('drowser')
 
@@ -21,8 +21,33 @@ class DrowserWindow(Window):
         """Set up the main window"""
         super(DrowserWindow, self).finish_initializing(builder)
 
+        # Windows
         self.AboutDialog = AboutDrowserDialog
         self.PreferencesDialog = PreferencesDrowserDialog
 
-        # Code for other initialization actions should be added here.
+        # UI Components
+        self.button_refresh   = self.builder.get_object('btnRefresh')
+        self.text_url_address = self.builder.get_object('txtUrlAddress')
+        self.web_window       = self.builder.get_object('webWindow')    
+        self.toolbar_actions  = self.builder.get_object('toolbarActions')
+        self.label_status     = self.builder.get_object('lblStatus')
+
+        self.webkit_view      = WebKit.WebView()
+    
+        # Add WebKit widget to web window
+        self.web_window.add(self.webkit_view)
+        self.webkit_view.show()
+        
+        # Theme toolbar
+        context = self.toolbar_actions.get_style_context()
+        context.add_class(Gtk.STYLE_CLASS_PRIMARY_TOOLBAR)
+    
+    def on_btnRefresh_clicked(self, widget):
+        self.label_status.set_text('Refreshing')
+        self.webkit_view.reload()
+
+    def on_txtUrlAddress_activate(self, widget):
+        url = widget.get_text()
+        self.label_status.set_text('Navigating to ' + url)
+        self.webkit_view.open(url)
 
