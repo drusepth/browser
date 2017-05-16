@@ -15,22 +15,17 @@ class BrowserTab(Gtk.VBox):
         scrolled_window.add(self.webview)
 
         self._setup_find_dialog()
-        self._setup_task_dialog()
 
         url_box = Gtk.HBox()
         url_box.pack_start(self.url_bar, True, True, 0)
         url_box.pack_start(self.tasks_button, False, False, 0)
 
-        self.split_browser_container = Gtk.HBox()
-        self.split_browser_container.pack_start(scrolled_window, True, True, 0)
-        self.split_browser_container.pack_start(self.tasks_box, False, False, 0)
-
         self.pack_start(url_box, False, False, 0)
-        self.pack_start(self.split_browser_container, True, True, 0)
+        self.pack_start(scrolled_window, True, True, 0)
         self.pack_start(self.find_box, False, False, 0)
 
         url_box.show_all()
-        self.split_browser_container.show_all()
+        scrolled_window.show()
 
     def _load_url(self, widget):
         url = self.url_bar.get_text()
@@ -60,15 +55,6 @@ class BrowserTab(Gtk.VBox):
         find_box.pack_start(next_button, expand=False, fill=False, padding=0)
         self.find_box = find_box
 
-    def _setup_task_dialog(self):
-        self.tasks_box = Gtk.VBox()
-        self.tasks_box.set_size_request(360, 32)
-
-        add_task_button = Gtk.Button("+ Task")
-        self.tasks_box.pack_start(add_task_button, False, False, 0)
-        add_task_button.show()
-
-
 class Browser(Gtk.Window):
     def __init__(self, *args, **kwargs):
         super(Browser, self).__init__(*args, **kwargs)
@@ -84,15 +70,29 @@ class Browser(Gtk.Window):
         # create a first, empty browser tab
         self.tabs.append((self._create_tab(), Gtk.Label("New Tab")))
         self.notebook.append_page(*self.tabs[0])
-        self.add(self.notebook)
+
+        self._setup_task_dialog()
+
+        self.split_browser_container = Gtk.HBox()
+        self.split_browser_container.pack_start(self.notebook, True, True, 0)
+        self.split_browser_container.pack_start(self.tasks_box, False, False, 0)
+        self.add(self.split_browser_container)
 
         # connect signals
         self.connect("destroy", Gtk.main_quit)
         self.connect("key-press-event", self._key_pressed)
         self.notebook.connect("switch-page", self._tab_changed)
 
-        self.notebook.show()
+        self.split_browser_container.show_all()
         self.show()
+
+    def _setup_task_dialog(self):
+        self.tasks_box = Gtk.VBox()
+        self.tasks_box.set_size_request(360, 32)
+
+        add_task_button = Gtk.Button("+ Task")
+        self.tasks_box.pack_start(add_task_button, False, False, 0)
+        add_task_button.show()
 
     def _tab_changed(self, notebook, current_page, index):
         if not index:
